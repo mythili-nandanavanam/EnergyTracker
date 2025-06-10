@@ -1,6 +1,29 @@
+# Ignore Haskell build artifacts
 /dist-newstyle/
-*.hi
-*.o
-.vscode/
+/dist/
+/*.hi
+/*.o
+/.stack-work/
+.cabal-sandbox/
+cabal.sandbox.config
+
+# Ignore generated binaries
+EnergyTrack
 Jalaiah.exe
+*.exe
+*.out
+
+# Ignore editor/IDE specific files
+*.swp
+*.swo
+*.bak
+*~
+.vscode/
+.idea/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment/secrets if any
 .env
