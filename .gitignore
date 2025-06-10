@@ -1,0 +1,6 @@
+/dist-newstyle/
+*.hi
+*.o
+.vscode/
+Jalaiah.exe
+.env
