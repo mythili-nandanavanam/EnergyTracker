@@ -27,4 +27,5 @@ Thumbs.db
 
 # Ignore environment/secrets if any
 .env
+.Energy_Consumption_Tracker_Documentation.docx
 .Energy-Consumption-Tracker-Project-Documentation.pptx
