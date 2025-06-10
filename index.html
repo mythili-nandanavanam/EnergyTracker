@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Energy Consumption Tracker</title>
+<style>
+    :root {
+        --primary: #2ecc71;
+        --primary-dark: #27ae60;
+        --secondary: #3498db;
+        --dark: #2c3e50;
+        --light: #ecf0f1;
+        --danger: #e74c3c;
+        --warning: #f39c12;
+    }
+    
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+        background-color: #f5f7fa;
+        color: var(--dark);
+    }
+    
+    header {
+        background-color: var(--primary);
+        color: white;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    
+    .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        color: var(--dark);
+    }
+    
+    .card-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+    }
+    
+    .card-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-info {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 400px;
+        margin-bottom: 2rem;
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    
+    .chart {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .form-section {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .form-title {
+        margin-bottom: 1.5rem;
+        color: var(--dark);
+        font-size: 1.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    
+    input, select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.3s ease;
+    }
+    
+    button:hover {
+        background-color: var(--primary-dark);
+    }
+    
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        overflow-x: auto;
+    }
+    
+    .history-table th, .history-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .history-table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .history-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .delete-btn {
+        background-color: var(--danger);
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+    
+    footer {
+        background-color: var(--dark);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        margin-top: 2rem;
+    }
+    
+    /* Fixed chart sizing issue */
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Ensure each chart container has enough height */
+    .charts-row .chart-container {
+        min-height: 450px;
+    }
+    
+    /* Ensure consistent chart sizing */
+    canvas.chart {
+        max-height: 350px;
+    }
+    
+    #dataList {
+        list-style-type: none;
+        margin-top: 1rem;
+        padding: 0;
+    }
+    
+    #dataList li {
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    #dataList li:last-child {
+        border-bottom: none;
+    }
+    
+    .clear-btn {
+        background-color: var(--warning);
+        margin-top: 1rem;
+    }
+    
+    .clear-btn:hover {
+        background-color: #e67e22;
+    }
+    
+    .server-status {
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .server-status.online {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+    }
+    
+    .server-status.offline {
+        background-color: rgba(231, 76, 60, 0.2);
+        color: #c0392b;
+    }
+    
+    /* Responsive improvements */
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    @media (max-width: 768px) {
+        .charts-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .chart-container {
+            height: 350px;
+        }
+    }
+</style>
+</head>
+<body>
+<header>
+<div class="container">
+<h1>EnergyTrack</h1>
+<p>Monitor and optimize your energy consumption</p>
+</div>
+</header>
+<div class="container">
+<div id="serverStatus" class="server-status">Checking server status...</div>
+
+<h2 style="margin: 1.5rem 0;">Dashboard</h2>
+<div class="dashboard">
+<div class="card">
+<div class="card-title">
+<div class="card-icon">⚡</div>
+<span>Total Consumption</span>
+</div>
+<div class="card-value">458 kWh</div>
+<div class="card-info">+5% compared to last month</div>
+</div>
+<div class="card">
+<div class="card-title">
+<div class="card-icon">💰</div>
+<span>Cost</span>
+</div>
+<div class="card-value">Rs. 6250</div>
+<div class="card-info">-2% compared to last month</div>
+</div>
+<div class="card">
+<div class="card-title">
+<div class="card-icon">🌱</div>
+<span>Carbon Footprint</span>
+</div>
+<div class="card-value">203 kg CO₂</div>
+<div class="card-info">Reduced by 15 kg this month</div>
+</div>
+</div>
+
+<!-- Each chart has a dedicated container to avoid overlap -->
+<div class="chart-container">
+<h3 style="margin-bottom: 1rem;">Monthly Consumption</h3>
+<div style="position: relative; height: 350px;">
+   <canvas class="chart" id="monthlyChart"></canvas>
+</div>
+</div>
+
+<div class="charts-row">
+<div class="chart-container">
+<h3 style="margin-bottom: 1rem;">Consumption by Device</h3>
+<div style="position: relative; height: 350px;">
+   <canvas id="deviceChart"></canvas>
+</div>
+</div>
+<div class="chart-container">
+<h3 style="margin-bottom: 1rem;">Daily Usage Pattern</h3>
+<div style="position: relative; height: 350px;">
+   <canvas class="chart" id="dailyChart"></canvas>
+</div>
+</div>
+</div>
+
+<div class="form-section">
+<h3 class="form-title">Add Appliance Entry</h3>
+<form id="applianceForm">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+<div class="form-group">
+<label for="device">Device Name</label>
+<input id="device" placeholder="Device Name" required />
+</div>
+<div class="form-group">
+<label for="consumption">Consumption (W)</label>
+<input id="consumption" placeholder="Consumption (W)" type="number" required />
+</div>
+</div>
+<button type="button" id="submitBtn">Add Entry</button>
+</form>
+<div style="margin-top: 1rem;">
+<h4>Current Devices:</h4>
+<ul id="dataList"></ul>
+<button class="clear-btn" id="clearBtn">Clear All Data</button>
+</div>
+</div>
+
+<div class="form-section">
+<h3 class="form-title">Add New Reading</h3>
+<form id="consumptionForm">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+<div class="form-group">
+<label for="readingDate">Date</label>
+<input id="readingDate" required="" type="date"/>
+</div>
+<div class="form-group">
+<label for="readingValue">Meter Reading (kWh)</label>
+<input id="readingValue" placeholder="e.g. 12458" required="" type="number"/>
+</div>
+<div class="form-group">
+<label for="deviceType">Device/Category</label>
+<select id="deviceType">
+<option value="total">Total Home</option>
+<option value="heating">Heating &amp; Cooling</option>
+<option value="appliances">Appliances</option>
+<option value="lighting">Lighting</option>
+<option value="electronics">Electronics</option>
+</select>
+</div>
+</div>
+<div class="form-group">
+<label for="notes">Notes</label>
+<input id="notes" placeholder="Any additional information" type="text"/>
+</div>
+<button type="submit">Add Reading</button>
+</form>
+</div>
+
+<div class="form-section">
+<h3 class="form-title">History</h3>
+<div class="table-responsive">
+<table class="history-table">
+<thead>
+<tr>
+<th>Date</th>
+<th>Reading</th>
+<th>Device/Category</th>
+<th>Consumption</th>
+<th>Notes</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="historyBody">
+<tr>
+<td>2025-04-01</td>
+<td>12458 kWh</td>
+<td>Total Home</td>
+<td>458 kWh</td>
+<td></td>
+<td><button class="delete-btn">Delete</button></td>
+</tr>
+<tr>
+<td>2025-03-01</td>
+<td>12000 kWh</td>
+<td>Total Home</td>
+<td>437 kWh</td>
+<td></td>
+<td><button class="delete-btn">Delete</button></td>
+</tr>
+<tr>
+<td>2025-02-01</td>
+<td>11563 kWh</td>
+<td>Total Home</td>
+<td>411 kWh</td>
+<td></td>
+<td><button class="delete-btn">Delete</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<footer>
+<div class="container">
+<p>© 2025 EnergyTrack - Track, Analyze and Save Energy</p>
+</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    // Chart initialization
+    let deviceChart; // Declare deviceChart at global scope
+    let serverOnline = false;
+    let lastReadingValue = 12458; // Initialize with the last known reading
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check server status
+        checkServerStatus();
+
+        // Monthly consumption chart - fixed sizing
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        const monthlyChart = new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                datasets: [{
+                    label: 'kWh',
+                    data: [390, 420, 445, 411, 437, 458],
+                    backgroundColor: '#2ecc71',
+                    borderColor: '#27ae60',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Device breakdown chart - Initialize empty pie chart with proper sizing
+        const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+        deviceChart = new Chart(deviceCtx, {
+            type: 'pie',
+            data: {
+                labels: ['No devices yet'],
+                datasets: [{
+                    label: 'Energy Consumption (W)',
+                    data: [1],
+                    backgroundColor: [
+                        '#3498db',
+                        '#e74c3c',
+                        '#f1c40f',
+                        '#9b59b6',
+                        '#1abc9c',
+                        '#34495e'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Energy Consumption by Device'
+                    }
+                }
+            }
+        });
+        
+        // Daily usage pattern chart with proper sizing
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        const dailyChart = new Chart(dailyCtx, {
+            type: 'line',
+            data: {
+                labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '11pm'],
+                datasets: [{
+                    label: 'kWh',
+                    data: [0.8, 0.5, 0.7, 1.8, 2.0, 1.5, 2.8, 2.5, 1.2],
+                    fill: true,
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderColor: '#2ecc71',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
+        // Form submission handler - UPDATED to include notes and calculate consumption
+        document.getElementById('consumptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('readingDate').value;
+            const reading = parseInt(document.getElementById('readingValue').value);
+            const device = document.getElementById('deviceType').value;
+            const deviceText = document.getElementById('deviceType').options[document.getElementById('deviceType').selectedIndex].text;
+            const notes = document.getElementById('notes').value;
+            
+            // Calculate consumption (current reading - last reading)
+            const consumption = reading - lastReadingValue;
+            lastReadingValue = reading; // Update last reading
+            
+            // In a real app, we would save this data to a database
+            // For now, we'll just add it to the table
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${date}</td>
+                <td>${reading} kWh</td>
+                <td>${deviceText}</td>
+                <td>${consumption} kWh</td>
+                <td>${notes}</td>
+                <td><button class="delete-btn">Delete</button></td>
+            `;
+            
+            const tbody = document.getElementById('historyBody');
+            tbody.insertBefore(tr, tbody.firstChild);
+            
+            // Clear the form
+            document.getElementById('consumptionForm').reset();
+            
+            // Add event listener to the new delete button
+            tr.querySelector('.delete-btn').addEventListener('click', function() {
+                tr.remove();
+            });
+            
+            alert('Reading added successfully!');
+        });
+        
+        // Add event listeners to existing delete buttons
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
+
+        // Set form submission to prevent default if server is offline
+        document.getElementById('applianceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (serverOnline) {
+                submitAppliance();
+            } else {
+                alert("Server is offline. Please start the backend server first.");
+            }
+        });
+    });
+
+    // Check if server is running
+    function checkServerStatus() {
+        const statusDiv = document.getElementById('serverStatus');
+        
+        fetch("http://localhost:3000/", { method: "GET" })
+            .then(res => {
+                if (res.ok) {
+                    statusDiv.textContent = "Server is online ✅";
+                    statusDiv.className = "server-status online";
+                    serverOnline = true;
+                    loadEntries(); // Load entries once we confirm server is up
+                } else {
+                    throw new Error("Server responded with an error");
+                }
+            })
+            .catch(err => {
+                statusDiv.textContent = "Server is offline ❌ - Start the backend server first!";
+                statusDiv.className = "server-status offline";
+                serverOnline = false;
+                console.error("Server connection error:", err);
+            });
+    }
+
+    // Function to update pie chart
+    function updatePieChart(data) {
+        if (!data || data.length === 0) {
+            deviceChart.data.labels = ['No devices yet'];
+            deviceChart.data.datasets[0].data = [1];
+            deviceChart.update();
+            return;
+        }
+        
+        const labels = data.map(entry => entry.device);
+        const values = data.map(entry => entry.consumption);
+
+        deviceChart.data.labels = labels;
+        deviceChart.data.datasets[0].data = values;
+        deviceChart.update();
+    }
+
+    // Fetch and show existing entries
+    function loadEntries() {
+        if (!serverOnline) {
+            const list = document.getElementById("dataList");
+            list.innerHTML = "<li>Server is offline. Start the backend server to load data.</li>";
+            return;
+        }
+        
+        fetch("http://localhost:3000/data")
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("dataList");
+                list.innerHTML = "";
+                
+                if (data.length === 0) {
+                    list.innerHTML = "<li>No devices added yet. Add your first device above.</li>";
+                } else {
+                    data.forEach(entry => {
+                        const li = document.createElement("li");
+                        li.innerHTML = `<span>${entry.device}: ${entry.consumption}W</span>`;
+                        list.appendChild(li);
+                    });
+                }
+                
+                updatePieChart(data);
+            })
+            .catch(err => {
+                console.error("Error loading data:", err);
+                const list = document.getElementById("dataList");
+                list.innerHTML = "<li>Could not connect to the server. Is it running?</li>";
+                
+                // Update server status
+                const statusDiv = document.getElementById('serverStatus');
+                statusDiv.textContent = "Server is offline ❌ - Start the backend server first!";
+                statusDiv.className = "server-status offline";
+                serverOnline = false;
+            });
+    }
+
+    // Clear all data
+    function clearData() {
+        if (!serverOnline) {
+            alert("Server is offline. Please start the backend server first.");
+            return;
+        }
+        
+        if (confirm("Are you sure you want to clear all device data?")) {
+            fetch("http://localhost:3000/clear", { 
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(res => res.json())
+            .then(msg => {
+                alert("All device data has been cleared!");
+                loadEntries(); // Refresh the list
+            })
+            .catch(err => {
+                console.error("Error clearing data:", err);
+                alert("Could not clear data. Server connection error.");
+            });
+        }
+    }
+
+    // Add new appliance entry
+    function submitAppliance() {
+        const device = document.getElementById("device").value;
+        const consumption = parseInt(document.getElementById("consumption").value);
+        
+        if (!device.trim()) {
+            alert("Please enter a device name");
+            return;
+        }
+        
+        if (isNaN(consumption) || consumption <= 0) {
+            alert("Please enter a valid consumption value (positive number)");
+            return;
+        }
+        
+        fetch("http://localhost:3000/data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ device, consumption })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(`Device "${device}" added successfully!`);
+            document.getElementById("device").value = "";
+            document.getElementById("consumption").value = "";
+            loadEntries(); // Refresh list and chart
+        })
+        .catch(err => {
+            console.error("Error adding data:", err);
+            alert("Could not add device. Server connection error.");
+        });
+    }
+
+    // Wire up event listeners
+    document.getElementById("submitBtn").addEventListener("click", submitAppliance);
+    document.getElementById("clearBtn").addEventListener("click", clearData);
+    
+    // Check server status periodically (every 10 seconds)
+    setInterval(checkServerStatus, 10000);
+</script>
+</body>
+</html>
